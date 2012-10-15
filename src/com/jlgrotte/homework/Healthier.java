@@ -1,0 +1,218 @@
+package com.jlgrotte.homework;
+//Justin L. Grotte
+//IT 407 Advanced Java  - October 12, 2012
+//
+//Homework 16.26 - (Cooking with Healthier Ingredients) Obesity in America is increasing at an alarming rate. 
+//Check the map from the Centers for Disease Control and Prevention (CDC) at 
+//http://www.cdc.gov/nccdphp/dnpa/Obesity/trend/maps/index.htm, which shows obesity trends in the United States 
+//over the last 20 years. As obesity increases, so do occurrences of related problems (e.g., heart disease, high 
+//blood pressure, high cholesterol, type 2 diabetes). Write a program that helps users choose healthier ingredients 
+//when cooking, and helps those allergic to certain foods (e.g., nuts, gluten) find substitutes. The program should 
+//read a recipe from a JTextArea and suggest healthier replacements for some of the ingredients. For simplicity, your 
+//program should assume the recipe has no abbreviations for measures such as teaspoons, cups, and tablespoons, and 
+//uses numerical digits for quantities (e.g., 1 egg, 2 cups) rather than spelling them out (one egg, two cups). Some  
+//common substitutions are shown in Fig. 16.27. Your program should display a warning such as, “Always consult your 
+//physician before making significant changes to your diet.” Your program should take into consideration that 
+//replacements are not always one-for-one. 
+//
+//For example, if a cake recipe calls for three eggs, it might reasonably use six egg whites instead. Conversion data 
+//for measurements and substitutes can be obtained at websites such as:
+//
+//http://chinesefood.about.com/od/recipeconversionfaqs/f/usmetricrecipes.htm
+//http://www.pioneerthinking.com/eggsub.html
+//http://www.gourmetsleuth.com/conversions.htm
+//
+//Your program should consider the user’s health concerns, such as high cholesterol, high blood pressure, weight loss, 
+//gluten allergy, and so on. For high cholesterol, the program should suggest substitutes for eggs and dairy products; 
+//if the user wishes to lose weight, low-calorie substitutes for ingredients such as sugar should be suggested.
+
+import java.awt.Color;
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JTextArea;
+import javax.swing.JCheckBox;
+
+public class Healthier extends JFrame {
+	/**
+	 * All constants and instance variables
+	 */
+	private static final int MWA_WIDTH = 450;
+	private static final int MWA_HEIGHT = 675;
+	private static final Color BG_COLOR = Color.PINK;
+
+	private JLabel copyLbl;
+	private JTextArea oldRecipeTA;
+	private JTextArea newRecipeTA;
+	private JCheckBox heartHealthCB;
+	private JCheckBox loseWeightCB;
+	private JCheckBox sugarCB;
+	private Ingredients ing;
+	private JCheckBox bloodPressureCB;
+	private JCheckBox diabetesCB;
+	private JCheckBox allergiesCB;
+
+	/**
+	 * Healthier constructor -- the primary "work horse" of this application
+	 */
+	public Healthier() {
+		setTitle("Healthier Ingredient Substitutes");
+		setupGUI();
+
+	} // end Healthier() constructor
+
+	/**
+	 * setupGUI lays out the GUI
+	 */
+	private void setupGUI() {
+		/**
+		 * Set background color and other JFrame attributes
+		 */
+		setLayout(null);
+		getContentPane().setBackground(BG_COLOR);
+		setSize(MWA_WIDTH, MWA_HEIGHT);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setLocationRelativeTo(null);
+		setResizable(false);
+		ing = new Ingredients();
+
+		String oldRecipe = "1 egg 2 cup milk 3 cup sugar";
+		String newRecipe = ing.action(oldRecipe);
+
+		// Display both old and new strings
+		System.out.println("oldRecipe: <" + oldRecipe + ">");
+		System.out.println("newRecipe: <" + newRecipe + ">");
+		System.out.println();
+
+		/**
+		 * Set the title of the application (in the GUI)
+		 */
+		JLabel titleLbl = new JLabel(
+				"Healthier Ingredients - Simple ingredient substitutions");
+		titleLbl.setBounds(40, 25, 300, 20);
+		add(titleLbl);
+
+		/**
+		 * Insert a JTextField, its JLabel, and the copy JLabel
+		 */
+		JLabel nameLbl = new JLabel("Type your ingredients here:");
+		nameLbl.setBounds(40, 70, 300, 20);
+		add(nameLbl);
+
+		oldRecipeTA = new JTextArea(50, 40);
+		oldRecipeTA.setBounds(40, 115, 300, 60);
+		add(oldRecipeTA);
+
+		newRecipeTA = new JTextArea(50, 40);
+		newRecipeTA.setBounds(40, 280, 300, 60);
+		add(newRecipeTA);
+
+		copyLbl = new JLabel("These are your ingredient substitutions:");
+		copyLbl.setBounds(40, 245, 300, 20);
+		add(copyLbl);
+
+		copyLbl = new JLabel(
+				"Please consult your Physician before making changes to your diet.");
+		copyLbl.setBounds(30, 600, 300, 20);
+		add(copyLbl);
+
+		bloodPressureCB = new JCheckBox("High Blood Pressure?");
+		bloodPressureCB.setBounds(70, 500, 200, 20);
+		add(bloodPressureCB);
+		bloodPressureCB.setBackground(BG_COLOR);
+
+		diabetesCB = new JCheckBox("Diabetic?");
+		diabetesCB.setBounds(70, 530, 200, 20);
+		add(diabetesCB);
+		diabetesCB.setBackground(BG_COLOR);
+
+		allergiesCB = new JCheckBox("Allergies?");
+		allergiesCB.setBounds(70, 560, 200, 20);
+		add(allergiesCB);
+		allergiesCB.setBackground(BG_COLOR);
+
+		/**
+		 * Create and insert the Copy and Quit buttons Hook up their handlers
+		 */
+		JButton newBtn = new JButton("Click for ingredient substitutions!");
+		newBtn.setBounds(75, 190, 190, 22);
+		newBtn.addActionListener(new Healthier.NewListener());
+		add(newBtn);
+
+		JButton exitBtn = new JButton("Quit");
+		exitBtn.setBounds(235, 390, 65, 22);
+		exitBtn.addActionListener(new Healthier.QuitListener());
+		add(exitBtn);
+
+		copyLbl = new JLabel("Please enter your ingredients like this....");
+		copyLbl.setBounds(30, 425, 300, 20);
+		add(copyLbl);
+
+		JButton clearBtn = new JButton("Clear");
+		clearBtn.setBounds(155, 390, 65, 22);
+		clearBtn.addActionListener(new Healthier.ClearListener());
+		add(clearBtn);
+	} // end setupGUI()
+
+	/**
+	 * The application begins execution here; make the application "thread-safe"
+	 */
+	public static void main(String args[]) {
+		EventQueue.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				new Healthier().setVisible(true);
+				new Healthier();
+			}
+		});
+	} // end main()
+
+	/**
+	 * All inner classes are placed below this point
+	 */
+	// Ingredients is not an innerclass it has no meaning to be part of the gui its a so called domain class and contains the data itself
+	/**
+	 * Listener/handler for the Copy button
+	 */
+	private class NewListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			String data = oldRecipeTA.getText().trim();
+			System.out.println("<" + data + ">");
+			System.out.println("State of High Blood Pressure: "
+					+ bloodPressureCB.isSelected());
+			System.out.println("State of Diabetes: " + diabetesCB.isSelected());
+			System.out.println("State of Allergies: "
+					+ allergiesCB.isSelected());
+
+			String newData = ing.action(data); // Process the old recipe data
+			newRecipeTA.setText(newData); // Load the new recipe into the
+											// JTextArea
+
+			oldRecipeTA.requestFocus();
+		}
+	} // end class CopyListener
+
+	/**
+	 * Listener/handler for the Quit button
+	 */
+	private class QuitListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			System.exit(0);
+		}
+	} // end class QuitListener
+
+	private class ClearListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			oldRecipeTA.setText(" ");
+			newRecipeTA.setText(" ");
+		}
+	} // end class ClearListener
+
+}
